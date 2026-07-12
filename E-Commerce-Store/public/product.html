@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - ShopHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">ShopHub</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/cart.html" class="cart-link">Cart <span class="cart-count" id="cartCount">0</span></a>
+      <a href="/orders.html">Orders</a>
+      <div class="auth-buttons" id="authButtons">
+        <a href="/login.html" class="btn-outline">Login</a>
+        <a href="/register.html" class="btn-primary">Register</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div id="alert" class="alert"></div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Loading product...</p>
+    </div>
+    <div class="product-detail" id="productDetail"></div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+
+    async function loadProduct() {
+      try {
+        const res = await fetch(`/api/products/${productId}`);
+        if (!res.ok) throw new Error('Not found');
+        const product = await res.json();
+        renderProduct(product);
+      } catch {
+        document.getElementById('loading').style.display = 'none';
+        showAlert('Product not found', 'error');
+      }
+    }
+
+    function renderProduct(p) {
+      document.getElementById('loading').style.display = 'none';
+      document.title = `${p.name} - ShopHub`;
+      document.getElementById('productDetail').innerHTML = `
+        <div class="img-wrap">
+          <img src="${p.image_url}" alt="${p.name}">
+        </div>
+        <div>
+          <div class="breadcrumb"><a href="/">Home</a> / ${p.category} / ${p.name}</div>
+          <div class="name">${p.name}</div>
+          <span class="category-tag">${p.category}</span>
+          <div class="price">$${p.price.toFixed(2)}</div>
+          <div class="description">${p.description}</div>
+          <div class="stock-info ${p.stock > 0 ? 'in' : 'out'}">
+            ${p.stock > 0 ? '✓ In Stock (' + p.stock + ' available)' : '✕ Out of Stock'}
+          </div>
+          <div class="actions">
+            <div class="qty-wrap">
+              <button onclick="changeQty(-1)">−</button>
+              <input type="text" id="qty" value="1" readonly>
+              <button onclick="changeQty(1)">+</button>
+            </div>
+            <button class="add-btn" onclick="addToCart(${p.id})" ${p.stock === 0 ? 'disabled' : ''}>
+              ${p.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function changeQty(delta) {
+      const input = document.getElementById('qty');
+      let val = parseInt(input.value) + delta;
+      if (val < 1) val = 1;
+      input.value = val;
+    }
+
+    async function addToCart(productId) {
+      const qty = parseInt(document.getElementById('qty').value) || 1;
+      try {
+        const res = await fetch('/api/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: productId, quantity: qty })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAlert('✓ Item added to cart!', 'success');
+          updateCartCount();
+        } else if (res.status === 401) {
+          window.location.href = '/login.html';
+        } else {
+          showAlert(data.error || 'Failed to add item', 'error');
+        }
+      } catch {
+        showAlert('Error adding to cart', 'error');
+      }
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>

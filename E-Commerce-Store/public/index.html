@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopHub - Premium E-Commerce Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">ShopHub</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/cart.html" class="cart-link">Cart <span class="cart-count" id="cartCount">0</span></a>
+      <a href="/orders.html">Orders</a>
+      <div class="auth-buttons" id="authButtons">
+        <a href="/login.html" class="btn-outline">Login</a>
+        <a href="/register.html" class="btn-primary">Register</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="hero">
+      <div class="hero-text">
+        <h1>Discover <span>Premium</span> Products</h1>
+        <p>Shop the latest trends with unbeatable prices and fast delivery. Your one-stop destination for quality products.</p>
+        <a href="#products" class="hero-btn">Browse Collection →</a>
+      </div>
+      <div class="hero-badge">
+        <div class="big-num" id="productCount">0</div>
+        <div class="label">Products Available</div>
+      </div>
+    </div>
+
+    <h1 class="page-title" id="products">Our Products</h1>
+    <p class="page-subtitle">Find exactly what you need with our curated collection</p>
+
+    <div class="filters">
+      <span class="filter-label">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search products...">
+      <select id="categoryFilter">
+        <option value="">All Categories</option>
+      </select>
+    </div>
+
+    <div id="alert" class="alert"></div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Loading products...</p>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/products.js"></script>
+</body>
+</html>

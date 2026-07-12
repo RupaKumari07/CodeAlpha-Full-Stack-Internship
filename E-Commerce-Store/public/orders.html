@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - ShopHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">ShopHub</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/cart.html" class="cart-link">Cart <span class="cart-count" id="cartCount">0</span></a>
+      <a href="/orders.html">Orders</a>
+      <div class="auth-buttons" id="authButtons">
+        <a href="/login.html" class="btn-outline">Login</a>
+        <a href="/register.html" class="btn-primary">Register</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h1 class="page-title">My Orders</h1>
+    <p class="page-subtitle">Track all your purchases in one place</p>
+    <div id="alert" class="alert"></div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Loading orders...</p>
+    </div>
+    <div class="orders-list" id="ordersList"></div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/cart.js"></script>
+  <script>
+    async function loadOrders() {
+      document.getElementById('loading').style.display = 'block';
+      try {
+        const res = await fetch('/api/orders');
+        if (res.status === 401) {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('ordersList').innerHTML = `
+            <p style="text-align:center;padding:3rem;color:#888;">Please <a href="/login.html" style="color:#302b63;font-weight:700;">log in</a> to view your orders.</p>
+          `;
+          return;
+        }
+        const orders = await res.json();
+        document.getElementById('loading').style.display = 'none';
+        renderOrders(orders);
+      } catch {
+        document.getElementById('loading').style.display = 'none';
+        showAlert('Error loading orders', 'error');
+      }
+    }
+
+    function renderOrders(orders) {
+      if (orders.length === 0) {
+        document.getElementById('ordersList').innerHTML = `
+          <p style="text-align:center;padding:3rem;color:#888;">
+            You haven't placed any orders yet.<br>
+            <a href="/" style="color:#302b63;font-weight:700;">Start shopping →</a>
+          </p>
+        `;
+        return;
+      }
+
+      const html = orders.map(order => `
+        <div class="order-card">
+          <div class="order-header">
+            <span class="order-id">Order #${order.id}</span>
+            <span class="order-status ${order.status}">${order.status}</span>
+            <span class="order-date">${new Date(order.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          </div>
+          <div class="order-items">
+            ${order.items.map(item => `
+              <div class="order-item">
+                <img src="${item.image_url}" alt="${item.name}">
+                <span class="item-detail">${item.name} <span class="item-qty">×${item.quantity}</span></span>
+                <span style="margin-left:auto;font-weight:600;">$${(item.price * item.quantity).toFixed(2)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="order-total-row">
+            <strong>Total: $${order.total.toFixed(2)}</strong>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('ordersList').innerHTML = html;
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>
